@@ -15,6 +15,8 @@ const NUM_ANIMALS = 100; //number of animal objects to create
 
 const IMAGE_PATH = 'assets/images/'; //a global constant to store our image file path in case we need to update it
 
+const HINT_OFFSET_MARGIN = 500; //a constant to adjust the size of offset for the hint frame
+
 let animalImages = []; //array to store animal images
 let animals = []; //array to store animal objects
 let splashAnimals = []; //array to store animals for the start screen
@@ -26,8 +28,13 @@ let level = 0; //initialize a variable to track the level players are on
 let numAnimals = level * 5; //a variable to scale the number of interference animals with each level
 
 let levelTime = 100; //a variable to track the total time given for the level
+let countdownRate = 1;
 let timeRemaining = levelTime; //a variable to track the time remaining in the level
 let isTiming = false; //a variable to start and stop the timer
+
+let hintOffsetX = undefined; //variable for the offset of the hint frame along the X-axis
+let hintOffsetY = undefined; //variable for the offset of the hint frame along the Y-axis
+let hintOn = false;
 
 // preload()
 // a function to prepare assets before initializing the game
@@ -51,6 +58,13 @@ function setup() {
   createAnimals(animals, numAnimals); //create all the generic animals
 
   createSausageDog(); //create our sausage dog hero
+
+  //randomize the offset of the hint frame at the start of the level
+  hintOffsetX = random(-HINT_OFFSET_MARGIN, HINT_OFFSET_MARGIN);
+  hintOffsetY = random(-HINT_OFFSET_MARGIN, HINT_OFFSET_MARGIN);
+
+
+
 }
 
 
@@ -61,21 +75,35 @@ function draw() {
 
   //logic to display the start screen or level depending on the game state
   if (level < 1) {
-
     displayAnimals(splashAnimals); //make the start screen animals visible
 
     displayTitleScreen(); //draw the title screen
   } else {
+
+    // activate the hint frame and speed up the level timer if H key is held
+    if (keyIsDown(72)) {
+      countdownRate = 10;
+      hintOn = true;
+    } else {
+      countdownRate = 1;
+      hintOn = false;
+    }
+
     timeUpdate(); //update time remaining
 
     displayAnimals(animals); //draw all the generic animals
 
     sausageDog.update(); //draw the sausage dog
 
+    //display the hint frame if the player is holding the H key
+    if(hintOn) {
+      displayHintFrame();
+    }
+
     displayLevel(); //draw the current level numeral
     displayTimerBar(); //draw the timer bar
 
-    if (timeRemaining == 0) {
+    if (timeRemaining <= 0) {
       gameOver();
     }
   }
@@ -93,7 +121,7 @@ function mousePressed() {
   sausageDog.mousePressed(); //call sausage dog's click-testing function
 
   //reset the game to play again
-  if (timeRemaining == 0) {
+  if (timeRemaining <= 0) {
     location.reload(); //if click happens during game over, reload the game
   }
 }
@@ -127,13 +155,13 @@ function createSausageDog() {
 // a function that manages the timer values
 function timeUpdate() {
   //if the time remaining is zero, stop the clock
-  if (timeRemaining === 0) {
+  if (timeRemaining <= 0) {
     isTiming = false;
   }
 
   //if the clock is running, reduce the time remaining
   if (isTiming && timeRemaining > 0) {
-    timeRemaining--; //update time remaining to find the dog
+    timeRemaining = timeRemaining - countdownRate; //update time remaining to find the dog
   }
 }
 
@@ -207,12 +235,34 @@ function displayTimerBar() {
   fill(0, 0, 0);
   rect(30, 50, 310, 50);
 
+  //draw the hint instructions
+  textSize(28); //make the words small
+  fill(255, 255, 255); //make it white
+  strokeWeight(7);
+  stroke(0); // stroke around outside of the words for easier visibility
+  textFont('Courier'); //set font to Courier
+  textAlign(LEFT); //align right so as digits increase it doesn't run off the screen
+  text('Hold H for a hint', 42, 127); //position it in the upper right-hand corner
+
   timerPercent = timeLeft(timeRemaining); //determine what percentage of time is left
 
   //draw the timer bar based on the percentage of time left
+  noStroke();
   fill(255-255*timerPercent, 255*timerPercent, 0);
   rect(35, 55, (300*timerPercent), 40);
 
+  pop();
+}
+
+
+// displayHintFrame()
+// a function that draws the frame when players need help finding the dog
+function displayHintFrame() {
+  push();
+  noFill(); // make the hint frame empty in the center
+  strokeWeight(1800); //make the frame's border really thick to fill the margins of the screen
+  stroke('rgba(0, 0, 50, 0.75)'); //make the frame blue and semi-transparent
+  circle(sausageDog.x + hintOffsetX, sausageDog.y + hintOffsetY, 3050); //center the frame roughly on sausage dog but with a randomized offset
   pop();
 }
 
