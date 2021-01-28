@@ -22,80 +22,84 @@ let spyProfile = {
 
 //array of tasks
 let tasks = [
-  `stop`,
-  `prevent`,
-  `instigate`,
-  `initiate`,
-  `assist`,
   `aid`,
+  `assist`,
   `delay`,
+  `document`,
+  `initiate`,
+  `instigate`,
+  `investigate`,
   `observe`,
-  `document`
+  `prevent`,
+  `provoke`,
+  `stop`
 ];
 
 //array of titles
 let titles = [
+  `Agent`,
+  `Chairman`,
+  `Fr.`,
+  `The Great`,
   `Dr.`,
+  `Miss`,
   `Mr.`,
   `Mrs.`,
-  `Miss`,
-  `Agent`,
   `Operative`,
-  `The Great`,
-  `Fr.`,
-  `Chairman`
+  `Señor`
 ];
 
 //array names
 let names = [
-  `Scoopini`,
-  `Voldosknaya`,
   `De La Battrie`,
-  `Krausmann`,
-  `Stevens`,
-  `Noh`,
-  `Garry`,
-  `Kleinberg`,
   `Elroy`,
-  `McBartles`,
+  `Garry`,
+  `Johnson`,
   `Jones`,
-  `Johnson`
+  `Kleinberg`,
+  `Krausmann`,
+  `McBartles`,
+  `Noh`,
+  `Scoopini`,
+  `Stevens`,
+  `Voldosknaya`
 ];
 
 //array of actions
 let actions = [
   `blowing up`,
-  `invading`,
-  `incapacitating`,
-  `stealing`,
-  `sabotaging`,
-  `targeting`,
+  `counterfeiting`,
   `damaging`,
   `hiding`,
+  `incapacitating`,
+  `infiltraing`,
+  `invading`,
   `relocating`,
-  `counterfeiting`,
-  `infiltraing`
+  `sabotaging`,
+  `stealing`,
+  `targeting`
 ];
 
 //array of targets
 let targets = [
+  `15 tons of spanish gold`,
+  `all the squirrels of Malta`,
+  `the Declaration of Independance`,
+  `government secrets`,
+  `the hope diamond`,
+  `hyperdrive technology`,
+  `important archaeological ruins`,
+  `the last breeding pair of pandas`,
   `the moldavian embassy`,
   `the moon`,
-  `the hope diamond`,
+  `nuclear weapons`,
   `the queen of England`,
   `the Smithsonian Museum`,
-  `all the squirrels of Malta`,
-  `15 tons of spanish gold`,
-  `the Declaration of Independance`,
   `the stock market`,
-  `important archaeological ruins`,
-  `the Vatican archives`,
-  `the last breeding pair of pandas`,
-  `government secrets`,
-  `nuclear weapons`,
-  `hyperdrive technology`
+  `the Vatican archives`
 ];
 
+//variable to hold imported JSON data
 let instrumentData = undefined;
 let objectData = undefined;
 let tarotData = undefined;
@@ -103,9 +107,7 @@ let countryData = undefined;
 
 let data; //a buffer variable to store profile data pulled from local storage
 
-let texture; //a variable to hold our aged paper texture
-
-let userInput = ``;
+let userInput = ``; //a variable to hold user input commands typed into the keyboard
 
 
 // preload()
@@ -116,13 +118,11 @@ function preload() {
   objectData = loadJSON(`https://raw.githubusercontent.com/dariusk/corpora/master/data/objects/objects.json`);
   tarotData = loadJSON(`https://raw.githubusercontent.com/dariusk/corpora/master/data/divination/tarot_interpretations.json`);
   countryData = loadJSON(`https://raw.githubusercontent.com/dariusk/corpora/master/data/geography/countries.json`);
-
-  texture = loadImage(`assets/images/texture.png`);
 }
 
 
 // setup()
-// Description of setup
+// a function that sets up our canvas and imports our data
 function setup() {
   createCanvas(windowWidth, windowHeight); //initialize canvas
 
@@ -142,7 +142,7 @@ function setup() {
 
 
 // setSpyData()
-// a function that imports spy profile data from local storage
+// a function that imports spy profile data from local storage and copies it to usable variable
 function setSpyData() {
   spyProfile.name = data.name;
   spyProfile.alias = data.alias;
@@ -170,7 +170,7 @@ function generateSpyProfile() {
 
 
 // draw()
-// Description of draw()
+// a function that draws all out stuff
 function draw() {
   displayPaper(); //draw the paper background
 
@@ -183,7 +183,7 @@ function draw() {
 function keyPressed() {
   //make backspace work when typing
   if (keyCode === BACKSPACE) {
-    userInput = userInput.substring(0,userInput.length-1);
+    userInput = userInput.substring(0,userInput.length-1); //do the typical backspace thing
   } else if (keyCode === ENTER) {
     //if user inputs "reassign", give them a new mission and gadget
     if (userInput === `reassign`) {
@@ -191,9 +191,9 @@ function keyPressed() {
       spyProfile.posting = random(countryData.countries); //generate a Posting
       spyProfile.mission = `To ${random(tasks)} ${random(titles)} ${random(names)} ${random(actions)} ${random(targets)}`; //generate mission
 
-      localStorage.setItem(`spy-profile-data`, JSON.stringify(spyProfile)); //save profile to local storage after generation
+      localStorage.setItem(`spy-profile-data`, JSON.stringify(spyProfile)); //save new profile to local storage after generation
     }
-    userInput = ``;
+    userInput = ``; //clear the command line to empty
   }
 }
 
@@ -202,7 +202,7 @@ function keyPressed() {
 // a function that takes typing info
 function keyTyped() {
   if (key === `Enter`) {
-    return;
+    return; //just prevent "enter" being input as a character. This is working around some weird inherent behavior of the keyTyped() method.
   }
   userInput = userInput.concat(key); //add typed keys to the end of the input
 }
@@ -211,13 +211,7 @@ function keyTyped() {
 // displayPaper()
 // a function that makes the background look like aged and creased paper
 function displayPaper() {
-  background(`rgba(245, 230, 190, 1)`); //slightly off-white yellow
-
-  //draw low alpha stain texture on "page"
-  push();
-  tint(255, 45);
-  image(texture, 0,0, width, height);
-  pop();
+  background(`rgba(245, 230, 190, 1)`); //tastefully off-white yellow
 
   //draw the horizontal rules
   push();
@@ -240,6 +234,7 @@ function displayPaper() {
   //draw gradient of shadow in the crease
   for(let i = 0; i < 30; i++) {
     stroke(lerpColor(color(`rgba(0,0,0,0.25)`),color(`rgba(150,150,150,0)`),i/30));
+    //draw fade above and below the crease
     line(0,(height/2)-(i),width,(height/2)-(i));
     line(0,(height/2)+30-(30-i),width,(height/2)+30-(30-i));
   }
