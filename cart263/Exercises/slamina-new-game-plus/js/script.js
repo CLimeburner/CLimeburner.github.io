@@ -8,7 +8,7 @@ Coded: Chip Limeburner
 
 This is a game using Annyang and responsiveVoice libraries in which you have to guess animals based on their
 names said backwards. Correct guesses will score you point, while incorrect guesses or running out of time will
-score failures, until all animals have been guessed. 
+score failures, until all animals have been guessed.
 
 ******************/
 
@@ -194,7 +194,7 @@ function setup() {
   //implement annyang
   if (annyang) {
     let commands = {
-      'I think it is *animal': guessAnimal
+      'I think it is *animal': guessAnimal //define the annyang command
     };
     annyang.addCommands(commands); //add the command we just defined
     annyang.start(); //start annyang running
@@ -205,9 +205,10 @@ function setup() {
 // draw()
 // Description of draw()
 function draw() {
+  //check to see if you're out of animals and if so, say the ending phrase once.
   if (animalsRemaining == 0 && isGameOver == 0) {
-    responsiveVoice.speak("The question is, how many more animals can there be? And the answer is none. None more animals.", "US English Female");
-    isGameOver = 1;
+    responsiveVoice.speak("The question is, how many more animals can there be? And the answer is none. None more animals.", "US English Female"); //tasteful reference to This is Spinal Tap
+    isGameOver = 1; //toggle the check variable so the phrase is only said once.
   }
 
   //if the clock is running, decrement the timer
@@ -310,7 +311,7 @@ function displayClock() {
   //make it turn clockwise and from the top
   rotate(-0.5*PI);
   scale(1, -1);
-  arc(0, 0, 115, 115, 0, 2*PI*time/TIMER, PIE);
+  arc(0, 0, 115, 115, 0, 2*PI*time/TIMER, PIE); //draw the clock itself
   pop();
 }
 
