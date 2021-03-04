@@ -1,0 +1,50 @@
+/*********************************************
+
+Haiku Generator ++
+Coded by: Chip Limeburner
+
+**********************************************/
+
+
+body {
+  background-color: #abcbab;
+}
+
+h1 {
+    text-align: center;
+    margin-top: 100px;
+}
+
+h3 {
+    text-align: center;
+    font-family: Helvetica, sans-serif;
+    font-weight: bold;
+    line-height: 5px;
+    color: #666666;
+}
+
+.haiku-line {
+  text-align: center;
+}
+
+#haiku {
+  font-family: Helvetica, sans-serif;
+  font-size: 2rem;
+  font-weight: bold;
+}
+
+#save-button {
+  background-color: lightgrey;
+  width: 200px;
+  height: 60px;
+  margin: auto;
+  margin-top: 150px;
+  border-radius: 10px;
+}
+
+#button-container {
+  position: relative;
+  margin: 5px;
+  padding: 0px;
+  top: 15px;
+}
