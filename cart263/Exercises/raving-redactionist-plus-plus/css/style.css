@@ -1,0 +1,51 @@
+/*********************************************
+
+Here is a description of any special CSS used.
+By default that's nothing.
+
+**********************************************/
+
+
+.redacted {
+  background-color: black;
+  user-select: none;
+}
+
+.revealed {
+  color: #CC0000;
+  font-weight: bold;
+}
+
+.snide-text {
+  float:left;
+  margin-top: 40px;
+  color: #CC0000;
+}
+
+.top-secret {
+  width: auto;
+}
+
+.extra-secret:hover {
+  font-size: 2rem;
+  font-weight: bold;
+}
+
+.extra-secret-fixed {
+  font-size: 2rem;
+  font-weight: bold;
+}
+
+#secret-document {
+  font-family: monospace;
+  font-size: 1.25rem;
+  width: 50vw;
+  margin: auto;
+}
+
+#snide-comment {
+  font-family: monospace;
+  font-size: 1.25rem;
+  width: 50vw;
+  margin: auto;
+}
