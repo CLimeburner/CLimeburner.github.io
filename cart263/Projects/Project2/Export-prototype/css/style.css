@@ -1,0 +1,19 @@
+
+
+
+#interface-container {
+  width: 400px;
+  height: 600px;
+  background-color: lightgrey;
+  float: left;
+}
+
+
+#demo-frame {
+  float: left;
+}
+
+
+#download-link {
+  display: none;
+}
