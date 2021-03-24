@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0>
+
+    <title>Code Taker</title>
+
+    <!-- CSS stylesheet(s) -->
+    <link rel="stylesheet" type="text/css" href="css/style.css" />
+    <link rel="stylesheet" type="text/css" href="https://code.jquery.com/ui/1.11.4/themes/vader/jquery-ui.css">
+
+    <!-- Library script(s) go here -->
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js" integrity="sha256-/xUj+3OJU5yExlq6GSYGSHk7tPXikynS7ogEvDej/m4=" crossorigin="anonymous"></script>
+    <script src="https://code.jquery.com/ui/1.12.1/jquery-ui.min.js" integrity="sha256-VazP97ZCwtekAsvgPBSUwPFKdrwD3unUfSGVYrahUqU=" crossorigin="anonymous"></script>
+  </head>
+
+  <body>
+    <!-- The poem, secret letters are in spans with class "secret" -->
+    <section id="poem">
+      <h2>A <span class="secret">P</span>erformance Joke</h2>
+      <p>
+        So a person goes to see a therap<span class="secret">i</span>st.
+        He sits down in the therapist's office,<br/>
+        gets comfortable, and pro<span class="secret">c</span>eeds to explains that lately he's been<br/>
+        overwhelming<span class="secret">l</span>y depressed.
+        His job requires him to move around <span class="secret">a</span> lot,<br/>
+        he often has to work nights, and this has put strain on his marriage.
+      </p>
+      <p>
+        The therapist listens carefully, before saying, "Y'know, I think I have<br/>
+        just the thin<span class="secret">g</span> for you. Tonight, the <span class="secret">c</span>lown The Great Pagliacci <span class="secret">i</span>s performing<br/>
+        and you should go see him if you have a ch<span class="secret">a</span>nce. I'm sure that will cheer you right up."
+      </p>
+      <p>
+        The man looks at the therapist despairingly and moans:
+      </p>
+      <h4>"But doctor, I am ________"</h4>
+    </section>
+
+    <!-- The secret answer area-->
+    <section id="answer"></section>
+
+    <div id="solved-dialog" title="Pagliacci!!!">
+      <h1>
+        &#129313; <!-- The almighty clown emoji -->
+      </h1>
+    </div>
+
+    <!-- My script(s) -->
+    <script src="js/script.js"></script>
+  </body>
+
+</html>

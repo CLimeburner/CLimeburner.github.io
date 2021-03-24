@@ -1,0 +1,27 @@
+/*********************************************
+
+Code Taker++
+Tutorial by: Pippin Barr
+Coded by: Chip Limeburner
+
+**********************************************/
+
+h1 {
+  font-size: 10rem;
+  line-height: 40px;
+  text-align: center;
+}
+
+#poem {
+  font-size: 1.2rem;
+}
+
+.found {
+  color: red;
+}
+
+#answer {
+  width: 10rem;
+  height: 2rem;
+  border: 1px dashed black;
+}
