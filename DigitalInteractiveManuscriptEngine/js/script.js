@@ -1,5 +1,83 @@
 "use strict";
 
+///////////////////////////////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////////////////////
+/*****************
+
+DIGITAL INTERACTIVE MANUSCRIPT ENGINE (DIME)
+Author: Chip Limeburner
+
+The Digital Interactive Manuscript Engine (DIME) is a platform designed to streamline the process of creating interactive digital versions
+of interactive books. Using simple drag-and-drop interfaces, DIME allows users to integrate their diagrams as a single integrated HTML file.
+
+******************/
+///////////////////////////////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////////////////////
+/******************
+
+FUNCTIONS FOUND IN THIS DOCUMENT:
+
+preload()
+setup()
+draw()
+
+mousePressed() - tracks mouse position based on certain prerequisites
+mouseReleased() - stops tracking the mouse on release
+clearTracking() - stops tracking all parameters
+detectClick(incomingX, incomingY, incomingLayer) - determines if a click happened in an opaque part of a given image layer
+getGrabbedObject() - identify the layer that has been clicked on
+checkMoveAction() - check for events to move the layer
+checkScaleAction() - check for events to scale the layer
+checkRotOriginAction() - check for events to move the rotational origin
+checkTransPathAction() - check fro events to move the points defining the axis of translation
+updateDrag() - moves the canvas at each frame based on how much the mouse has moved
+updateActiveLayer() - updates active layer properties based on moving and scaling actions
+updateLiveParameters() - updates values for layers that dictate their transform while under manipulation in live mode
+drawLayerImages() - iterates through the layers, drawing their images
+drawTransformPoints() - draws the corner and edge points for scaling actions
+drawRotationalOrigin() - draws the origin around which the layer will rotate if it's a rotational layer
+drawTranslationPath() - draws the points and line that define the path of translation if it's a translation layer
+createNewLayer() - initializes new layers
+tabSelector(tab) - makes tab the active layer and updates the toolbar to reflect as such
+moveLayerUp(clickedButton) - swaps the position of tab with the layer above it
+moveLayerDown(clickedButton) - swaps the position of tab with the layer below it
+deleteLayer(clickedButton) - deletes layers when you click their "x" button
+updateName(event) - updates the active layer's name
+updateImage() - updates the active layer's image when one is uploaded
+updateType() - updates the active layer's type
+updateFollow() - updates the respective parent and child relationships when one layer is parented to another
+updateXOrigin(event) - updates layer X origin when you set it from the toolbar
+updateYOrigin(event) - updates layer Y origin when you set it from the toolbar
+updateHeight(event) - updates layer height when you set it from the toolbar
+updateWidth(event) - updates layer width when you set it from the toolbar
+updateRotXOrigin(event) - updates layer rotational X origin when you set it from the toolbar
+updateRotYOrigin(event) - updates layer rotational Y origin when you set it from the toolbar
+updateSlideStartX(event) - updates layer translation starting X origin when you set it from the toolbar
+updateSlideStartY(event) - updates layer translation starting Y origin when you set it from the toolbar
+updateSlideEndX(event) - updates layer translation ending X origin when you set it from the toolbar
+updateSlideEndY(event) - updates layer translation ending Y origin  when you set it from the toolbar
+setActiveLayer(tab) - makes the arrangements to set tab as the active layer
+setToolbarProperties() - updates the toolbar to display the active layer's properties
+updateToolbarTransform() - updates the toolbar sidebar when a transformation is carried out
+updateRotationalTransform() - updates the sidebar values for the rotational origin
+updateTranslationTransform() - updates the sidebar values for the points that define the path of translation
+swapToolMode(element, mode) - swap to the appropriate tool mode when element is clicked
+displayLayerList() - draws the HTML elements based on the layers[] array
+exportDiagram() - compiles and downloads an HTML file of the interactive diagram
+zoomIn() - increments the scale of the canvas
+zoomHundred() - zooms the canvas to a scale of 1
+zoomOut() - decrements the scale of the canvas
+
+******************/
+///////////////////////////////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////////////////////
+
+let version = "0.9.1"; //version number
+
 let canvasWidth; //canvas width
 let canvasHeight; //canvas height
 
@@ -61,6 +139,7 @@ function setup() {
   cnv = createCanvas(canvasWidth, canvasHeight); //create the canvas
   cnv.parent(`viewport-pane`); //position canvas in the HTML framework
   cnv.background(`rgba(0, 0, 0, 0)`); //set canvas background
+
   //center the canvas
   cnvX = ((windowWidth - width) - 300)/2;
   cnvY = (windowHeight - height)/2;
@@ -74,10 +153,11 @@ function draw() {
   //update the canvas position
   cnv.position(cnvX, cnvY);
 
-  background(0);
+  background(0); //set background to black
 
   $("#heads-up-mode").html(`Tool mode: ${interfaceToolMode}`); //update the heads-up tool mode indicator
 
+  //display the canvas at the appropriate scale
   scaleFactor = Math.pow(0.9, scaleExp);
   scaledMouseX = mouseX/scaleFactor;
   scaledMouseY = mouseY/scaleFactor;
@@ -121,8 +201,11 @@ function mousePressed() {
     ///////////// EDIT MODE HANDLING ////////////
     /////////////////////////////////////////////
     if (interfaceToolMode == "edit") {
+      //register mouse position at beginning of action
       mouseOffsetX = scaledMouseX;
       mouseOffsetY = scaledMouseY;
+
+      //check various manipulation actions
       checkMoveAction();
       checkScaleAction();
       if(activeLayer.type == `rotational`) {
@@ -137,6 +220,7 @@ function mousePressed() {
     ///////////// DRAG MODE HANDLING ////////////
     /////////////////////////////////////////////
     else if (interfaceToolMode == "drag") {
+      //register mouse position at beginning of action
       dragOffsetX = winMouseX;
       dragOffsetY = winMouseY;
       dragTracking = true;
@@ -148,11 +232,13 @@ function mousePressed() {
     else if (interfaceToolMode == "live") {
       getGrabbedObject(); //figure out which layer has been clicked on
       if (grabbedLayer && grabbedLayer.type == "rotational") {
+        //rotate the grabbed object
         mouseOffsetX = scaledMouseX - (grabbedLayer.xOrigin + grabbedLayer.pivotXOffset);
         mouseOffsetY = scaledMouseY - (grabbedLayer.yOrigin + grabbedLayer.pivotYOffset);
         initialAngle = grabbedLayer.angle;
         deltaAngle = createVector(mouseOffsetX, mouseOffsetY).heading();
       } else if (grabbedLayer && grabbedLayer.type == "translational") {
+        //move the grabed object
         mouseOffsetX = scaledMouseX;
         mouseOffsetY = scaledMouseY;
         initialDisplacement = grabbedLayer.displacement;
@@ -193,7 +279,8 @@ function clearTracking() {
 function detectClick(incomingX, incomingY, incomingLayer) {
   let bufferImage = incomingLayer.img; //put the incoming layer's image into a buffer
   bufferImage.resize(incomingLayer.width, incomingLayer.height); //resize the image to its size as displayed
-  //
+
+  //calculate the adjusted X and Y based on image scaling
   let transAdjustedX = incomingX - incomingLayer.xOrigin + (incomingLayer.width/2);
   let transAdjustedY = incomingY - incomingLayer.yOrigin + (incomingLayer.height/2);
 
@@ -206,10 +293,11 @@ function detectClick(incomingX, incomingY, incomingLayer) {
   bufferLayerVector.normalize();
   bufferLayerVector.mult(incomingLayer.displacement);
 
-  //
+  //calculate the "final" coordinate for detection
   let outgoingX = bufferVector.x + (incomingLayer.width/2 + incomingLayer.pivotXOffset) - bufferLayerVector.x;
   let outgoingY = bufferVector.y + (incomingLayer.height/2 + incomingLayer.pivotYOffset) - bufferLayerVector.y;
 
+  //check to see if the final coordinate is transparent or not
   if(incomingLayer.img.get(outgoingX, outgoingY)[3] == 255) {
     return true;
   } else {
@@ -282,7 +370,7 @@ function checkRotOriginAction() {
 
 
 // checkTransPathAction()
-// check fro events to move the points defining the axis of translation
+// check for events to move the points defining the axis of translation
 function checkTransPathAction() {
   if (scaledMouseX > activeLayer.xOrigin + activeLayer.slideStartX - 5/scaleFactor
    && scaledMouseX < activeLayer.xOrigin + activeLayer.slideStartX + 5/scaleFactor
@@ -313,7 +401,7 @@ function updateDrag() {
 // updateActiveLayer()
 // updates active layer properties based on moving and scaling actions
 function updateActiveLayer() {
-  //update active layer info
+  //update active layer transform info depending on what action is currently being tracked
   if (moveTracking) {
     activeLayer.xOrigin += scaledMouseX - mouseOffsetX;
     activeLayer.yOrigin += scaledMouseY - mouseOffsetY;
@@ -373,7 +461,7 @@ function updateActiveLayer() {
 
 
 // updateLiveParameters()
-//  updates values for layers that dictate their transform while under manipulation in live mode
+// updates values for layers that dictate their transform while under manipulation in live mode
 function updateLiveParameters() {
 
   //if the grabbed layer is a rotating layer
@@ -422,7 +510,7 @@ function drawLayerImages() {
       bufferLayerVector.mult(layers[i].displacement);
       translate(bufferLayerVector);
 
-
+      //draw the image
       image(layers[i].img, 0, 0, layers[i].width, layers[i].height);
       pop();
     }
@@ -713,10 +801,11 @@ function updateFollow() {
 function updateXOrigin(event) {
   if (event.key == `Enter`) {
     if (interfaceToolMode == "edit") {
+      //update the variable
       let buffer = activeLayer.xOrigin - $(`#layerX`).val();
       activeLayer.xOrigin -= buffer;
     } else {
-      setToolbarProperties();
+      setToolbarProperties(); //update the toolbar display
     }
   }
 }
@@ -727,10 +816,11 @@ function updateXOrigin(event) {
 function updateYOrigin(event) {
   if (event.key == `Enter`) {
     if (interfaceToolMode == "edit") {
+      //update the variable
       let buffer = activeLayer.yOrigin - $(`#layerY`).val();
       activeLayer.yOrigin -= buffer;
     } else {
-      setToolbarProperties();
+      setToolbarProperties(); //update the toolbar display
     }
   }
 }
@@ -741,8 +831,10 @@ function updateYOrigin(event) {
 function updateHeight(event) {
   if (event.key == `Enter`) {
     if (interfaceToolMode == "edit") {
+      //update the variable
       let buffer = activeLayer.height - $(`#layerHeight`).val();
       activeLayer.height -= buffer;
+      //update the other dimension if aspect ratio is locked
       if (activeLayer.dimensionsLocked == true) {
         activeLayer.width = activeLayer.height * activeLayer.dimenseionsRatio;
       } else {
@@ -750,7 +842,7 @@ function updateHeight(event) {
       }
       updateToolbarTransform();
     } else {
-      setToolbarProperties();
+      setToolbarProperties(); //update the toolbar display
     }
   }
 }
@@ -761,8 +853,10 @@ function updateHeight(event) {
 function updateWidth(event) {
   if (event.key == `Enter`) {
     if (interfaceToolMode == "edit") {
+      //update the variable
       let buffer = activeLayer.width - $(`#layerWidth`).val();
       activeLayer.width -= buffer;
+      //update the other dimension if the aspect ratio is locked
       if (activeLayer.dimensionsLocked == true) {
         activeLayer.height = activeLayer.width/activeLayer.dimenseionsRatio;
       } else {
@@ -770,21 +864,22 @@ function updateWidth(event) {
       }
       updateToolbarTransform();
     } else {
-      setToolbarProperties();
+      setToolbarProperties(); //update the toolbar display
     }
   }
 }
 
 
-// updateRotYOrigin(event)
+// updateRotXOrigin(event)
 // updates layer rotational X origin when you set it from the toolbar
 function updateRotXOrigin(event) {
   if (event.key == `Enter`) {
     if (interfaceToolMode == "edit") {
+      //update the variable
       let buffer = activeLayer.pivotXOffset + (activeLayer.xOrigin - $("#layerRotX").val());
       activeLayer.pivotXOffset -= buffer;
     } else {
-      setToolbarProperties();
+      setToolbarProperties(); //update the toolbar display
     }
   }
 }
@@ -795,10 +890,11 @@ function updateRotXOrigin(event) {
 function updateRotYOrigin(event) {
   if (event.key == `Enter`) {
     if (interfaceToolMode == "edit") {
+      //update the variable
       let buffer = activeLayer.pivotYOffset + (activeLayer.yOrigin - $("#layerRotY").val());
       activeLayer.pivotYOffset -= buffer;
     } else {
-      setToolbarProperties();
+      setToolbarProperties(); //update the toolbar display
     }
   }
 }
@@ -809,10 +905,11 @@ function updateRotYOrigin(event) {
 function updateSlideStartX(event) {
   if (event.key == `Enter`) {
     if (interfaceToolMode == "edit") {
+      //update the variable
       let buffer = activeLayer.slideStartX + (activeLayer.xOrigin - $("#layerTransStartX").val());
       activeLayer.slideStartX -= buffer;
     } else {
-      setToolbarProperties();
+      setToolbarProperties(); //update the toolbar display
     }
   }
 }
@@ -823,10 +920,11 @@ function updateSlideStartX(event) {
 function updateSlideStartY(event) {
   if (event.key == `Enter`) {
     if (interfaceToolMode == "edit") {
+      //update the variable
       let buffer = activeLayer.slideStartY + (activeLayer.yOrigin - $("#layerTransStartY").val());
       activeLayer.slideStartY -= buffer;
     } else {
-      setToolbarProperties();
+      setToolbarProperties(); //update the toolbar display
     }
   }
 }
@@ -837,10 +935,11 @@ function updateSlideStartY(event) {
 function updateSlideEndX(event) {
   if (event.key == `Enter`) {
     if (interfaceToolMode == "edit") {
+      //update the variable
       let buffer = activeLayer.slideEndX + (activeLayer.xOrigin - $("#layerTransEndX").val());
       activeLayer.slideEndX -= buffer;
     } else {
-      setToolbarProperties();
+      setToolbarProperties(); //update the toolbar display
     }
   }
 }
@@ -851,10 +950,11 @@ function updateSlideEndX(event) {
 function updateSlideEndY(event) {
   if (event.key == `Enter`) {
     if (interfaceToolMode == "edit") {
+      //update the variable
       let buffer = activeLayer.slideEndY + (activeLayer.yOrigin - $("#layerTransEndY").val());
       activeLayer.slideEndY -= buffer;
     } else {
-      setToolbarProperties();
+      setToolbarProperties(); //update the toolbar display
     }
   }
 }
@@ -896,6 +996,8 @@ function setToolbarProperties() {
         <option value="translational">Translational</option>
       </select>
     </div>`
+
+  // code for future addition of "parented" layers
   /*<div class="toolbar-section" id="">
       <p class="toolbar-section-title">Follow layer:</p>
       <select class="" id="layerFollow" name="layerFollow" onchange="updateFollow()">
@@ -982,9 +1084,6 @@ function updateToolbarTransform() {
   }
   if(activeLayer.type == "translational") {
     updateTranslationTransform();
-  }
-  if(activeLayer.type == "flap") {
-
   }
 }
 
@@ -1086,7 +1185,7 @@ function exportDiagram() {
 
   //open the head tag + generic head contents
   newHTMLDocument +=
-  `<!-- Made with the Digital Interactive Manuscript Engine v0.9.0 -->
+  `<!-- Made with the Digital Interactive Manuscript Engine v${version} -->
   <!DOCTYPE html>
   <html lang="en" dir="ltr">
     <head>
@@ -1150,31 +1249,32 @@ function exportDiagram() {
 
   //insert layer objects
   for (let i = 0; i < layers.length; i++) {
-    layers[i].img.loadPixels();
-    newHTMLDocument +=
-      `let layer${i+1} = {
-          type: "${layers[i].type}",
-          imgNativeWidth: ${layers[i].img.width},
-          imgNativeHeight: ${layers[i].img.height},
-          imgPixels: [${layers[i].img.pixels}],
-          img: undefined,
-          xOrigin: ${layers[i].xOrigin},
-          yOrigin: ${layers[i].yOrigin},
-          width: ${layers[i].width},
-          height: ${layers[i].height},
-          pivotXOffset: ${layers[i].pivotXOffset},
-          pivotYOffset: ${layers[i].pivotYOffset},
-          angle: 0,
-          slideStartX: ${layers[i].slideStartX},
-          slideStartY: ${layers[i].slideStartY},
-          slideEndX: ${layers[i].slideEndX},
-          slideEndY: ${layers[i].slideEndY},
-          displacement: 0};
-      layers.push(layer${i+1});
+    if (layers[i].img) {
+      layers[i].img.loadPixels();
+      newHTMLDocument +=
+        `let layer${i+1} = {
+            type: "${layers[i].type}",
+            imgNativeWidth: ${layers[i].img.width},
+            imgNativeHeight: ${layers[i].img.height},
+            imgPixels: [${layers[i].img.pixels}],
+            img: undefined,
+            xOrigin: ${layers[i].xOrigin},
+            yOrigin: ${layers[i].yOrigin},
+            width: ${layers[i].width},
+            height: ${layers[i].height},
+            pivotXOffset: ${layers[i].pivotXOffset},
+            pivotYOffset: ${layers[i].pivotYOffset},
+            angle: 0,
+            slideStartX: ${layers[i].slideStartX},
+            slideStartY: ${layers[i].slideStartY},
+            slideEndX: ${layers[i].slideEndX},
+            slideEndY: ${layers[i].slideEndY},
+            displacement: 0};
+            layers.push(layer${i+1});
 
 
-      `
-
+            `
+    }
   }
 
   //insert main body of the script
